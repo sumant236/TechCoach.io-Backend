@@ -95,7 +95,7 @@ public class AuthController {
     private Cookie createJwtCookie(String token, int maxAge) {
         Cookie cookie = new Cookie("jwt_token", token);
         cookie.setHttpOnly(true);
-        cookie.setSecure(false); // TODO: Externalize to application.properties for production
+        cookie.setSecure(true); // TODO: Externalize to application.properties for production
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
         return cookie;

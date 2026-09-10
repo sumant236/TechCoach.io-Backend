@@ -27,7 +27,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtUtil jwtUtil;
 
     // React frontend URL, defaults to localhost:5173
-    @Value("${frontend.url:http://localhost:5173}")
+    @Value("${frontend.url:https://techcoach-io.vercel.app}")
     private String frontendUrl;
 
     // Intercepts successful OAuth2 logins, persists first-time users, attaches the JWT cookie, and redirects to the frontend dashboard
@@ -51,7 +51,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         // Sets an HttpOnly cookie to securely pass the JWT to the client while mitigating XSS vulnerabilities
         Cookie jwtCookie = new Cookie("jwt_token", token);
         jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(false); // Set to true in production (HTTPS)
+        jwtCookie.setSecure(true); // Set to true in production (HTTPS)
         jwtCookie.setPath("/");
         jwtCookie.setMaxAge(24 * 60 * 60);
 
