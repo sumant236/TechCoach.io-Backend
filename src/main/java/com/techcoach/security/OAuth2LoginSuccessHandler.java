@@ -28,7 +28,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtUtil jwtUtil;
 
     // React frontend URL, defaults to localhost:5173
-    @Value("${frontend.url:https://techcoach-io.vercel.app}")
+    @Value("${frontend.url:https://techcoach-io.onrender.com}")
     private String frontendUrl;
 
     // Intercepts successful OAuth2 logins, persists first-time users, attaches the JWT cookie, and redirects to the frontend dashboard
