@@ -7,6 +7,8 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -75,11 +77,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 // If the user no longer exists in the database
                 if (userRepository.findByEmail(userEmail).isEmpty()) {
-                    Cookie invalidCookie = new Cookie("jwt_token", null);
-                    invalidCookie.setHttpOnly(true);
-                    invalidCookie.setPath("/");
-                    invalidCookie.setMaxAge(0); // Instructs the browser to delete the cookie immediately
-                    response.addCookie(invalidCookie);
+                    ResponseCookie invalidCookie = ResponseCookie.from("jwt_token", null)
+                            .httpOnly(true)
+                            .path("/")
+                            .maxAge(0)
+                            .build();
+                    response.addHeader(HttpHeaders.SET_COOKIE, invalidCookie.toString());
 
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("User no longer exists. Please log in again.");

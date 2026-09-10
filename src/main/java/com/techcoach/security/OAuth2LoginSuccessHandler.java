@@ -4,11 +4,12 @@ import com.techcoach.entity.User;
 import com.techcoach.enums.Role;
 import com.techcoach.repository.UserRepository;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -49,13 +50,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         String token = jwtUtil.generateToken(email);
 
         // Sets an HttpOnly cookie to securely pass the JWT to the client while mitigating XSS vulnerabilities
-        Cookie jwtCookie = new Cookie("jwt_token", token);
-        jwtCookie.setHttpOnly(true);
-        jwtCookie.setSecure(true); // Set to true in production (HTTPS)
-        jwtCookie.setPath("/");
-        jwtCookie.setMaxAge(24 * 60 * 60);
+        ResponseCookie jwtCookie = ResponseCookie.from("jwt_token", token)
+                .httpOnly(true)
+                .secure(true) // Set to true in production (HTTPS)
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .sameSite("none")
+                .build();
 
-        response.addCookie(jwtCookie);
+        response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
 
         response.sendRedirect(frontendUrl + "/dashboard");
     }
