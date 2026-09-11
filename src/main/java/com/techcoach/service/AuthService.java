@@ -45,7 +45,12 @@ public class AuthService {
         userRepository.save(user);
 
         String token = jwtUtil.generateToken(user.getEmail());
-        return new AuthResponse(token, "User registered successfully");
+        UserDto userDto = UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(String.valueOf(user.getRole()))
+                .build();
+        return new AuthResponse(token, userDto);
     }
 
     // Authenticates user credentials via Spring Security's AuthenticationManager and generates a session JWT
@@ -53,7 +58,17 @@ public class AuthService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         String token = jwtUtil.generateToken(request.getEmail());
-        return new AuthResponse(token, "User logged in successfully");
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        UserDto userDto = UserDto.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .role(String.valueOf(user.getRole()))
+                .build();
+
+        return new AuthResponse(token, userDto);
     }
 
     // Extracts the authenticated principal from the current SecurityContext and safely maps it to a secure UserDto

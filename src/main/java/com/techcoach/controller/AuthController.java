@@ -1,11 +1,10 @@
 package com.techcoach.controller;
 
-import com.techcoach.dto.common.ApiResponse;
 import com.techcoach.dto.auth.AuthRequest;
 import com.techcoach.dto.auth.AuthResponse;
+import com.techcoach.dto.common.ApiResponse;
 import com.techcoach.dto.common.UserDto;
 import com.techcoach.service.AuthService;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+
 /**
  * REST controller handling user authentication flows and session management via HttpOnly cookies.
  */
@@ -28,17 +28,18 @@ public class AuthController {
 
     // Registers a new user and securely logs them in by setting an HttpOnly JWT cookie
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody AuthRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<UserDto>> register(@Valid @RequestBody AuthRequest request, HttpServletResponse response) {
         AuthResponse authData = authService.register(request);
 
         // Attach token securely via cookie; avoid sending in JSON body
         response.addHeader(HttpHeaders.SET_COOKIE, createJwtCookie(authData.getToken(), 24 * 60 * 60).toString());
 
-        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
+        ApiResponse<UserDto> apiResponse = ApiResponse.<UserDto>builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.CREATED.value())
                 .success(true)
                 .message("User registered and logged in successfully")
+                .data(authData.getUser())
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
@@ -46,16 +47,17 @@ public class AuthController {
 
     // Authenticates user credentials and establishes a secure session via HttpOnly JWT cookie
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@RequestBody @Valid AuthRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<UserDto>> login(@RequestBody @Valid AuthRequest request, HttpServletResponse response) {
         AuthResponse authData = authService.login(request);
-
+        System.out.println(authData);
         response.addHeader(HttpHeaders.SET_COOKIE, createJwtCookie(authData.getToken(), 24 * 60 * 60).toString());
 
-        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
+        ApiResponse<UserDto> apiResponse = ApiResponse.<UserDto>builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.OK.value())
                 .success(true)
                 .message("Logged in successfully")
+                .data(authData.getUser())
                 .build();
 
         return ResponseEntity.ok(apiResponse);

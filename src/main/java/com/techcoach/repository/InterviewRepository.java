@@ -1,9 +1,9 @@
 package com.techcoach.repository;
 
+import com.techcoach.entity.Interview;
 import com.techcoach.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import com.techcoach.entity.Interview;
 
 import java.util.List;
 
