@@ -49,7 +49,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<UserDto>> login(@RequestBody @Valid AuthRequest request, HttpServletResponse response) {
         AuthResponse authData = authService.login(request);
-        System.out.println(authData);
         response.addHeader(HttpHeaders.SET_COOKIE, createJwtCookie(authData.getToken(), 24 * 60 * 60).toString());
 
         ApiResponse<UserDto> apiResponse = ApiResponse.<UserDto>builder()
