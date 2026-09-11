@@ -28,18 +28,15 @@ public class AuthController {
 
     // Registers a new user and securely logs them in by setting an HttpOnly JWT cookie
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserDto>> register(@Valid @RequestBody AuthRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody AuthRequest request, HttpServletResponse response) {
         AuthResponse authData = authService.register(request);
 
-        // Attach token securely via cookie; avoid sending in JSON body
-        response.addHeader(HttpHeaders.SET_COOKIE, createJwtCookie(authData.getToken(), 24 * 60 * 60).toString());
-
-        ApiResponse<UserDto> apiResponse = ApiResponse.<UserDto>builder()
+        ApiResponse<AuthResponse> apiResponse = ApiResponse.<AuthResponse>builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.CREATED.value())
                 .success(true)
                 .message("User registered and logged in successfully")
-                .data(authData.getUser())
+                .data(authData)
                 .build();
 
         return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
@@ -47,16 +44,15 @@ public class AuthController {
 
     // Authenticates user credentials and establishes a secure session via HttpOnly JWT cookie
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserDto>> login(@RequestBody @Valid AuthRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@RequestBody @Valid AuthRequest request, HttpServletResponse response) {
         AuthResponse authData = authService.login(request);
-        response.addHeader(HttpHeaders.SET_COOKIE, createJwtCookie(authData.getToken(), 24 * 60 * 60).toString());
 
-        ApiResponse<UserDto> apiResponse = ApiResponse.<UserDto>builder()
+        ApiResponse<AuthResponse> apiResponse = ApiResponse.<AuthResponse>builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.OK.value())
                 .success(true)
                 .message("Logged in successfully")
-                .data(authData.getUser())
+                .data(authData)
                 .build();
 
         return ResponseEntity.ok(apiResponse);
@@ -65,8 +61,6 @@ public class AuthController {
     // Terminates the user's active session by invalidating their authentication cookie
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<String>> logout(HttpServletResponse response) {
-        // Invalidate session by setting cookie max-age to 0
-        response.addHeader(HttpHeaders.SET_COOKIE, createJwtCookie(null, 0).toString());
 
         ApiResponse<String> apiResponse = ApiResponse.<String>builder()
                 .timestamp(LocalDateTime.now())
@@ -94,14 +88,4 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    // Helper method to construct secure, HttpOnly cookies for JWT storage
-    private ResponseCookie createJwtCookie(String token, int maxAge) {
-        return ResponseCookie.from("jwt_token", token)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("none")
-                .path("/")
-                .maxAge(maxAge)
-                .build();
-    }
 }

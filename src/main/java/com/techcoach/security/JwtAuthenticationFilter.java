@@ -42,20 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = null;
         String userEmail = null;
 
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
-                if ("jwt_token".equals(cookie.getName())) {
-                    token = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
-        if (token == null) {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
-            }
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
         }
 
         if (token != null) {
@@ -77,13 +66,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 // If the user no longer exists in the database
                 if (userRepository.findByEmail(userEmail).isEmpty()) {
-                    ResponseCookie invalidCookie = ResponseCookie.from("jwt_token", null)
-                            .httpOnly(true)
-                            .path("/")
-                            .maxAge(0)
-                            .build();
-                    response.addHeader(HttpHeaders.SET_COOKIE, invalidCookie.toString());
-
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.getWriter().write("User no longer exists. Please log in again.");
                     return;

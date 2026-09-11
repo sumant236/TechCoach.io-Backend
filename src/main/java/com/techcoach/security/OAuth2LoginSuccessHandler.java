@@ -49,17 +49,8 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
         String token = jwtUtil.generateToken(email);
 
-        // Sets an HttpOnly cookie to securely pass the JWT to the client while mitigating XSS vulnerabilities
-        ResponseCookie jwtCookie = ResponseCookie.from("jwt_token", token)
-                .httpOnly(true)
-                .secure(true) // Set to true in production (HTTPS)
-                .path("/")
-                .maxAge(24 * 60 * 60)
-                .sameSite("none")
-                .build();
+        String targetUrl = frontendUrl + "/oauth-success?token=" + token;
 
-        response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
-
-        response.sendRedirect(frontendUrl + "/dashboard");
+        response.sendRedirect(targetUrl);
     }
 }
