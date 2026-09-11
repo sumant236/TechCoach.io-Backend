@@ -99,6 +99,7 @@ public class AuthController {
         return ResponseCookie.from("jwt_token", token)
                 .httpOnly(true)
                 .secure(true)
+                .sameSite("none")
                 .path("/")
                 .maxAge(maxAge)
                 .build();
