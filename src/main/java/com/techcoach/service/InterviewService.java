@@ -39,6 +39,14 @@ public class InterviewService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        GeneratedQuestionsResponse aiResponse = aiService.generateQuestions(
+                request.getRole(), request.getTechStack(), request.getExperienceLevel()
+        );
+
+        if (aiResponse == null || aiResponse.getQuestions() == null || aiResponse.getQuestions().isEmpty()) {
+            throw new RuntimeException("Failed to generate interview questions. Please try again.");
+        }
+
         Interview interview = Interview.builder()
                 .user(user)
                 .role(request.getRole())
@@ -48,10 +56,6 @@ public class InterviewService {
                 .build();
 
         interview = interviewRepository.save(interview);
-
-        GeneratedQuestionsResponse aiResponse = aiService.generateQuestions(
-                request.getRole(), request.getTechStack(), request.getExperienceLevel()
-        );
 
         List<QuestionDto> questionDtos = new ArrayList<>();
         if (aiResponse != null && aiResponse.getQuestions() != null) {
