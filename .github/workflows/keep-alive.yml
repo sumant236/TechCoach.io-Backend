@@ -1,0 +1,16 @@
+name: Wake Up Backend
+
+on:
+  schedule:
+    # Runs every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send HTTP Request to Wake Up Render Instance
+        run: |
+          curl -X GET "https://techcoach-io.onrender.com/api/health" \
+          -H "Content-Type: application/json"
