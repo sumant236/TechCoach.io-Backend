@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -47,6 +48,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // Configure endpoint authorization rules (Specific rules must come before broad wildcards)
                 .authorizeHttpRequests(authz -> authz
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/me").authenticated() // Explicitly protect /me before general auth routes
                         .requestMatchers("/api/auth/**").permitAll() // Publicly accessible login/register routes
                         .anyRequest().authenticated() // Protect all other application routes
@@ -91,9 +93,13 @@ public class SecurityConfig {
 
         // Allow all headers
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
 
         // Crucial: Allow cookies to be sent back and forth across origins
         configuration.setAllowCredentials(true);
+
+        // Cache preflight response for 1 hour
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
